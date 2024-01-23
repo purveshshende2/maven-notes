@@ -1,47 +1,35 @@
 pipeline {
-    agent any
+	agent any
+	tools {
+	    maven "MAVEN3"
+	    jdk "OracleJDK8"
+	}
 
-    tools {
-        maven 'Maven 3'
-        jdk 'Oracle JDK 11'
-    }
-
-    stages {
-        stage('Checkout') {
+	stages {
+	    stage('Fetch code') {
             steps {
-                // Fetching source code from GitHub
-                script {
-                    checkout scm
-                }
+               git branch: 'vp-rem', url: 'https://github.com/devopshydclub/vprofile-repo.git'
             }
-        }
 
-        stage('Build') {
-            steps {
-                // Building the project with Maven
-                script {
-                    sh 'mvn clean install -DskipTests'
-                }
-            }
-        }
+	    }
 
-        stage('Post-Build') {
-            post {
-                success {
-                    // Echoing a message and archiving artifacts on success
-                    echo "Now archiving artifacts"
-                    archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
-                }
-            }
-        }
+	    stage('Build'){
+	        steps{
+	           sh 'mvn install -DskipTests'
+	        }
 
-        stage('Unit Test') {
-            steps {
-                // Running unit tests
-                script {
-                    sh 'mvn test'
-                }
+	        post {
+	           success {
+	              echo 'Now Archiving it...'
+	              archiveArtifacts artifacts: '**/target/*.war'
+	           }
+	        }
+	    }
+
+	    stage('UNIT TEST') {
+            steps{
+                sh 'mvn test'
             }
         }
-    }
+	}
 }
